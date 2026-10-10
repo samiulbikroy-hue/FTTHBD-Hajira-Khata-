@@ -1,26 +1,46 @@
-name: Deploy to GitHub Pages
+name: Build APK
 on:
   push:
     branches: [main]
   workflow_dispatch:
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-concurrency:
-  group: pages
-  cancel-in-progress: true
 jobs:
-  deploy:
+  apk:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/setup-node@v4
         with:
-          path: .
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Capacitor প্রজেক্ট বানানো
+        run: |
+          mkdir www && cp index.html www/index.html
+          npm init -y
+          npm i @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          npx cap init "হাজিরা খাতা" com.ftthbd.hajira --web-dir=www
+          npx cap add android
+          npx cap sync android
+      - name: অ্যাপ আইকন বসানো
+        run: |
+          if [ -f icon.png ]; then
+            R=android/app/src/main/res
+            rm -rf $R/mipmap-anydpi-v26
+            for s in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+              d=${s%%:*}; px=${s##*:}
+              convert icon.png -resize ${px}x${px} $R/mipmap-$d/ic_launcher.png
+              cp $R/mipmap-$d/ic_launcher.png $R/mipmap-$d/ic_launcher_round.png
+              cp $R/mipmap-$d/ic_launcher.png $R/mipmap-$d/ic_launcher_foreground.png
+            done
+          fi
+      - name: APK বিল্ড
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hajira-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
