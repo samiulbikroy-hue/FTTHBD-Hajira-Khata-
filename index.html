@@ -124,10 +124,9 @@ var K='hajira_v1',S={mode:null,people:[],rec:{},sel:null};
 try{var x=localStorage.getItem(K);if(x)S=JSON.parse(x)}catch(e){}
 if(!S.photo||S.photo.indexOf('data:image/svg+xml')===0)S.photo=DEF;
 var now=new Date(),vy=now.getFullYear(),vm=now.getMonth(),A=document.getElementById('app');try{var _c0=S.people.find(function(p){return p.id===S.sel});if(_c0){var _cp=curPer(_c0);vy=_cp.y;vm=_cp.m}}catch(e){}
-/* ===== ডেমো ডেটা (শুধু ফাঁকা অবস্থায় একবার) — প্রয়োজন না হলে এই ব্লক মুছে দিন ===== */
-(function(){if(S.people&&S.people.length)return;function kk(o){var t=new Date();t.setDate(t.getDate()-o);return key(t.getFullYear(),t.getMonth(),t.getDate())}
- var id='p1',id2='p2';S.mode='boss';S.sel=id;S.people=[{id:id,name:'রহিম উদ্দিন',salary:15000,mobile:'01712345678',desig:'টেকনিশিয়ান',eid:'FT-101',site:'মিরপুর'},{id:id2,name:'করিম হোসেন',salary:12000,mobile:'01812345678',desig:'হেলপার',eid:'FT-102',site:'উত্তরা'}];
- S.rec={p1:{},p2:{}};S.rec.p1[kk(6)]='a';S.rec.p1[kk(2)]='a';S.rec.p1[kk(4)]='l';S.people[0].adv=[{d:kk(3),a:1000,n:'জরুরি দরকারে'}];S.people[0].ex=[{t:'o',a:600,n:'২ ঘণ্টা',d:kk(1)}];})();
+/* পুরোনো ডেমো নাম (রহিম/করিম) থাকলে একবারেই মুছে ফেলে */
+(function(){try{var N={'রহিম উদ্দিন':'01712345678','করিম হোসেন':'01812345678'},ch=false;S.people=(S.people||[]).filter(function(p){var bad=(p.id==='p1'||p.id==='p2')&&N[p.name]===p.mobile;if(bad){delete (S.rec||{})[p.id];ch=true}return !bad});
+ if(ch){if(!S.people.some(function(p){return p.id===S.sel}))S.sel=S.people.length?S.people[0].id:null;if(!S.people.length)S.mode=null;S.ts=Date.now();try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}}catch(e){}})();
 function saveLocal(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
 function save(){S.ts=Date.now();saveLocal();if(window.cloudSoon)cloudSoon()}
 function bn(n){return Math.round(n).toLocaleString('bn-BD')}
