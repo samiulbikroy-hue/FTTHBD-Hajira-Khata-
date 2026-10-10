@@ -8,6 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: ফাইল পরীক্ষা
+        run: |
+          ls -la
+          test -f index.html || { echo "ERROR: index.html নেই"; exit 1; }
+          head -c 120 index.html
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -15,16 +20,21 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - name: Capacitor প্রজেক্ট বানানো
+      - name: আলাদা ফোল্ডারে প্রজেক্ট বানানো
         run: |
-          mkdir www && cp index.html www/index.html
+          mkdir -p $HOME/app/www
+          cp index.html $HOME/app/www/index.html
+          [ -f icon.png ] && cp icon.png $HOME/app/icon.png || true
+          cd $HOME/app
           npm init -y
           npm i @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
-          npx cap init "হাজিরা খাতা" com.ftthbd.hajira --web-dir=www
+          npx cap init "Hajira Khata" com.ftthbd.hajira --web-dir=www
           npx cap add android
           npx cap sync android
-      - name: অ্যাপ আইকন বসানো
+          sed -i 's/>Hajira Khata</>হাজিরা খাতা</g' android/app/src/main/res/values/strings.xml || true
+      - name: আইকন বসানো
         run: |
+          cd $HOME/app
           if [ -f icon.png ]; then
             R=android/app/src/main/res
             rm -rf $R/mipmap-anydpi-v26
@@ -37,10 +47,10 @@ jobs:
           fi
       - name: APK বিল্ড
         run: |
-          cd android
+          cd $HOME/app/android
           chmod +x gradlew
           ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
           name: hajira-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: /home/runner/app/android/app/build/outputs/apk/debug/app-debug.apk
