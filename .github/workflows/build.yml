@@ -18,6 +18,9 @@ jobs:
       - run: mkdir -p www && cp index.html www/index.html
       - run: npm install
       - run: npx cap add android
+      - run: mkdir -p assets && cp icon.png assets/icon-only.png
+      - run: npm install --no-save @capacitor/assets@3.0.5
+      - run: npx capacitor-assets generate --android --iconBackgroundColor '#0f172a' --iconBackgroundColorDark '#0f172a'
       - run: npx cap sync android
       - run: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
